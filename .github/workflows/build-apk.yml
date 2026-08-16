@@ -1,0 +1,38 @@
+name: Get Better xCloud APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download latest Better xCloud Android APK
+        run: |
+          mkdir -p apk
+
+          RELEASE=$(curl -s \
+            https://api.github.com/repos/redphx/better-xcloud-android/releases/latest)
+
+          echo "$RELEASE" > release.json
+
+          echo "Última versión:"
+          echo "$RELEASE" | jq -r '.tag_name'
+
+          echo "Descargando APK..."
+
+          echo "$RELEASE" |
+            jq -r '.assets[] | select(.name | endswith(".apk")) | .browser_download_url' |
+            while read URL; do
+              wget -P apk "$URL"
+            done
+
+          echo "Archivos descargados:"
+          ls -lh apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Better-xCloud-APK
+          path: apk/*.apk
