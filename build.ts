@@ -159,12 +159,12 @@ async function buildPatches() {
     const files = await readdir(inputDir);
     const tsFiles = files.filter(file => file.endsWith('.ts'));
 
-    tsFiles.forEach(async file => {
-        // You can perform any operation with each TypeScript file
+    await Promise.all(tsFiles.map(async file => {
+        // Build every patch before the main bundle imports the generated files.
         console.log(`Building patch: ${file}`);
         const filePath = `${inputDir}/${file}`;
 
-        await Bun.build({
+        const result = await Bun.build({
             entrypoints: [filePath],
             outdir: outputDir,
             target: 'browser',
@@ -174,6 +174,10 @@ async function buildPatches() {
                 whitespace: true,
             },
         });
+
+        if (!result.success) {
+            throw new Error(`Failed to build patch: ${file}`);
+        }
 
         const outputFile = `${outputDir}/${file.replace('.ts', '.js')}`;
 
@@ -188,8 +192,8 @@ async function buildPatches() {
 
         // Save
         await Bun.write(outputFile, code);
-        console.log(`Patch built successfully: ${file}`)
-      });
+        console.log(`Patch built successfully: ${file}`);
+    }));
 }
 
 async function build(target: BuildTarget, params: { version: string, variant: BuildVariant, pretty: boolean, meta: boolean }, config: any={}) {
