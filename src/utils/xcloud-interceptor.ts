@@ -58,7 +58,7 @@ export class XcloudInterceptor {
             response = await NATIVE_FETCH(request, init);
         } catch (e) {
             BxEventBus.Script.emit('xcloud.server', { status: 'error' });
-            return;
+            throw e;
         }
         if (response.status !== 200) {
             // Unsupported region
