@@ -155,7 +155,7 @@ export class TouchController {
 
             const layouts = {};
 
-            json.layouts.forEach(async (layoutName: string) => {
+            await Promise.all(json.layouts.map(async (layoutName: string) => {
                 let baseLayouts = {};
                 if (layoutName in TouchController.#baseCustomLayouts) {
                     baseLayouts = TouchController.#baseCustomLayouts[layoutName];
@@ -171,7 +171,7 @@ export class TouchController {
                 }
 
                 Object.assign(layouts, baseLayouts);
-            });
+            }));
 
             json.layouts = layouts;
             TouchController.#customLayouts[xboxTitleId] = json;
